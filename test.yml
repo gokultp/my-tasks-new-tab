@@ -1,0 +1,30 @@
+paasta spark-run --force-use-eks \
+      --cluster-manager kubernetes \
+      --enable-compact-bin-packing --service biz_miner --cluster spark-pnw-prod \
+      --pool batch --instance batch \
+      --aws-credentials-yaml /etc/boto_cfg/biz_miner.yaml \
+      --spark-args '
+          spark.cores.max=24 spark.executor.memory=5g spark.executor.cores=2 spark.executor.instances=16
+          spark.tasks.cpus=2 spark.driver.cores=8 spark.driver.memory=28g
+          spark.driver.maxResultSize=8g
+          spark.mesos.executor.memoryOverhead=8000 spark.executor.memoryOverhead=8000 spark.reducer.maxReqsInFlight=5
+          spark.shuffle.io.maxRetries=10 spark.shuffle.io.retryWait=20s
+          spark.speculation=true spark.speculation.multiplier=5
+          spark.scheduler.maxRegisteredResourcesWaitingTime=30m
+          spark.task.maxFailures=10 spark.stage.maxConsecutiveAttempts=10' \
+      --cmd 'USER=biz_miner timeout 12h spark-submit \
+          /code/biz_miner/batch/unloaders/website_unloader/website_unloader_scheduler.py \
+          --num-of-days 1 \
+          --business-unloader-base-path s3a://yelp-sorted-logs-us-west-2/data/biz_miner/unloaders/business \
+          --website-unloader-config-path /code/biz_miner/configs/unloaders/website_unloader/website_unloader_config.yaml \
+          --run-date {shortdate}'
+
+
+
+
+Spark monitoring URL: http://adhocbatch1-uswest2bprod.uswest2-prod.yelpcorp.com:39091
+
+
+Grafana dashboard: http://y/spark-monitoring?var-paasta_cluster=pnw-prod-spark&var-service=biz_miner&var-instance=batch_gokult_spark-submit
+
+Signalfx dashboard: https://app.signalfx.com/#/dashboard/FOjL2yRAcAA?density=4&variables%5B%5D=Instance%3Dinstance_name:&variables%5B%5D=Service%3Dservice_name:%5B%22spark%22%5D&variables%5B%5D=PaaSTA%20Cluster%3Dpaasta_cluster:pnw-prod-spark&variables%5B%5D=PaaSTA%20Service%3Dpaasta_service:biz_miner&variables%5B%5D=PaaSTA%20Instance%3Dpaasta_instance:batch_gokult_spark-submit&startTime=-1h&endTime=Now

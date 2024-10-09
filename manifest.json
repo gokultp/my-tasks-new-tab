@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "My Tasks",
+    "version": "1.0",
+    "description": "Today's tasks and upcoming",
+    "author": "tp.gokul@gmail.com",
+    "chrome_url_overrides" : {
+      "newtab": "index.html"
+    },
+    "permissions": [
+      "storage"
+    ],
+    "icons": {
+      "16": "icon.png",
+      "128": "icon.png"
+    }
+}
